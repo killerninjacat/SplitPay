@@ -32,98 +32,189 @@ public class TransactionsActivity extends AppCompatActivity implements AdapterVi
     Button new_transaction;
     List<TransactionResponse> transaction;
     List <String> details,displaylist;
+    List<Boolean> isSettled;
     List<Integer> amts;
     String detail;
+    boolean exists,e;
     ArrayAdapter<String> arr;
     ListView transactionslist;
     int amt,u_id;
+    List<String> settled_names;
     private static final String baseurl = "http://127.0.0.1:8000/";
     private APIservice apiservice;
+    public void settledialog(String n,int a, int pos)
+    {
+        Button settle;
+        TextView n1,a1;
+        boolean settled=false;
+        final Dialog dialog = new Dialog(TransactionsActivity.this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setCancelable(true);
+        dialog.setContentView(R.layout.settlepayment);
+        dialog.getWindow().setLayout(1000, ViewGroup.LayoutParams.WRAP_CONTENT);
+        settle=dialog.findViewById(R.id.settlebtn);
+        n1=dialog.findViewById(R.id.nm);
+        a1=dialog.findViewById(R.id.amt);
+        a1.setText(a+"");
+        n1.setText(n);
+        if(settled_names.contains(n)) {
+            settle.setText("Settled");
+            settle.setBackgroundResource(R.drawable.settled);
+            settled=true;
+        }
+        if(!settled) {
+            settle.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    settled_names.add(n);
+                    dialog.dismiss();
+                    isSettled.set(pos,true);
+                    displaylist.set(pos,"  "+details.get(pos)+"        "+amts.get(pos)+"     "+isSettled.get(pos));
+                    arr.notifyDataSetChanged();
+                    transactionslist.invalidateViews();
+                }
+            });
+        }
+        dialog.show();
+    }
+    public interface UserCheckCallback {
+        void onResult(boolean userExists);
+    }
+    public void usercheck(String name,UserCheckCallback callback) {
+        Call<List<UserResponse>> getUsersCall = apiservice.getUsers();
+        getUsersCall.enqueue(new Callback<List<UserResponse>>() {
+            @Override
+            public void onResponse(Call<List<UserResponse>> call, Response<List<UserResponse>> response) {
+                if(response.isSuccessful())
+                {
+                    e=false;
+                    List<UserResponse> users=response.body();
+                    for(UserResponse user:users)
+                    {
+                        if(user.getEmail().equals(name)) {
+                            e = true;
+                            break;
+                        }
+                    }
+                    callback.onResult(e);
+                }
+            }
+            @Override
+            public void onFailure(Call<List<UserResponse>> call, Throwable t) {
+
+            }
+        });
+    }
     public void newtransactiondialog() {
-        EditText detailsbox,amountbox;
-        Button credit,debit;
+        EditText detailsbox, amountbox;
+        Button credit, debit;
+        exists = false;
         final Dialog dialog = new Dialog(TransactionsActivity.this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setCancelable(true);
         dialog.setContentView(R.layout.newtransaction);
         dialog.getWindow().setLayout(1000, ViewGroup.LayoutParams.WRAP_CONTENT);
-        detailsbox=dialog.findViewById(R.id.detail);
-        amountbox=dialog.findViewById(R.id.amount);
-        credit=dialog.findViewById(R.id.credit);
-        debit=dialog.findViewById(R.id.debit);
+        detailsbox = dialog.findViewById(R.id.detail);
+        amountbox = dialog.findViewById(R.id.amount);
+        credit = dialog.findViewById(R.id.credit);
+        debit = dialog.findViewById(R.id.debit);
         debit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("debit","onclick"+amountbox.getText());
-                String s1,s2;
-                if (!amountbox.getText().toString().isEmpty() && !detailsbox.getText().toString().isEmpty())
-                {
-                    detail = detailsbox.getText().toString();
-                    amt = Integer.parseInt(amountbox.getText().toString());
-                    amt=0-amt;
-                    TransactionRequest transactionRequest = new TransactionRequest(detail, amt);
-                    transactionRequest.setTitle(detail);
-                    transactionRequest.setDescription(amt);
-                    Call<TransactionResponse> call = apiservice.createTransaction(u_id, transactionRequest);
-                    call.enqueue(new Callback<TransactionResponse>() {
-                        @Override
-                        public void onResponse(Call<TransactionResponse> call, Response<TransactionResponse> response) {
-                            if (response.isSuccessful()) {
-                            } else {
-                                Log.d("signupactivity", "Code: " + response.code());
-                                Log.d("signupActivity", "Message: " + response.message());
-                                Log.d("error", "error msg: " + response.errorBody());
-                            }
-                        }
+                usercheck(detailsbox.getText().toString(), new UserCheckCallback() {
+                    @Override
+                    public void onResult(boolean userExists) {
+                        if (!userExists)
+                            Toast.makeText(TransactionsActivity.this, "User does not exist", Toast.LENGTH_SHORT).show();
+                        else {
+                            if (!amountbox.getText().toString().isEmpty() && !detailsbox.getText().toString().isEmpty()) {
+                                detail = detailsbox.getText().toString();
+                                amt = Integer.parseInt(amountbox.getText().toString());
+                                amt = 0 - amt;
+                                TransactionRequest transactionRequest = new TransactionRequest(detail, amt, false);
+                                transactionRequest.setTitle(detail);
+                                transactionRequest.setDescription(amt);
+                                transactionRequest.setSettled(false);
+                                Call<TransactionResponse> call = apiservice.createTransaction(u_id, transactionRequest);
+                                call.enqueue(new Callback<TransactionResponse>() {
+                                    @Override
+                                    public void onResponse(Call<TransactionResponse> call, Response<TransactionResponse> response) {
+                                        if (response.isSuccessful()) {
+                                        } else {
+                                            Log.d("signupactivity", "Code: " + response.code());
+                                            Log.d("signupActivity", "Message: " + response.message());
+                                            Log.d("error", "error msg: " + response.errorBody());
+                                        }
+                                    }
 
-                        @Override
-                        public void onFailure(Call<TransactionResponse> call, Throwable t) {
-                            Log.d("transactionsactivity", "failure" + t.getMessage());
+                                    @Override
+                                    public void onFailure(Call<TransactionResponse> call, Throwable t) {
+                                        Log.d("transactionsactivity", "failure" + t.getMessage());
+                                    }
+                                });
+                                dialog.dismiss();
+                                if (details.contains(detail)) {
+                                    displaylist.set(details.indexOf(detail), "  " + detail + "        " + (amts.get(details.indexOf(detail)) + amt) + "     " + false);
+                                    amts.set(details.indexOf(detail),amts.get(details.indexOf(detail))+amt);
+                                }
+                                else
+                                    displaylist.add("  " + detail + "        " + amt + "     " + false);
+                                arr.notifyDataSetChanged();
+                                transactionslist.invalidateViews();
+                            } else
+                                Toast.makeText(TransactionsActivity.this, "Enter the values", Toast.LENGTH_SHORT).show();
                         }
-                    });
-                    dialog.dismiss();
-                    displaylist.add("  "+detail+"        "+amt);
-                    arr.notifyDataSetChanged();
-                    transactionslist.invalidateViews();
-                }
-                else
-                    Toast.makeText(TransactionsActivity.this,"Enter the values",Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
         credit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!amountbox.getText().toString().isEmpty() && !detailsbox.getText().toString().isEmpty())
-                {
-                    detail = detailsbox.getText().toString();
-                amt = Integer.parseInt(amountbox.getText().toString());
-                TransactionRequest transactionRequest = new TransactionRequest(detail, amt);
-                transactionRequest.setTitle(detail);
-                transactionRequest.setDescription(amt);
-                Call<TransactionResponse> call = apiservice.createTransaction(u_id, transactionRequest);
-                call.enqueue(new Callback<TransactionResponse>() {
+                usercheck(detailsbox.getText().toString(), new UserCheckCallback() {
                     @Override
-                    public void onResponse(Call<TransactionResponse> call, Response<TransactionResponse> response) {
-                        if (response.isSuccessful()) {
-                        } else {
-                            Log.d("signupactivity", "Code: " + response.code());
-                            Log.d("signupActivity", "Message: " + response.message());
-                            Log.d("error", "error msg: " + response.errorBody());
+                    public void onResult(boolean userExists) {
+                        if (!userExists)
+                            Toast.makeText(TransactionsActivity.this, "User does not exist", Toast.LENGTH_SHORT).show();
+                        else {
+                            if (!amountbox.getText().toString().isEmpty() && !detailsbox.getText().toString().isEmpty()) {
+                                detail = detailsbox.getText().toString();
+                                amt = Integer.parseInt(amountbox.getText().toString());
+                                TransactionRequest transactionRequest = new TransactionRequest(detail, amt, false);
+                                transactionRequest.setTitle(detail);
+                                transactionRequest.setDescription(amt);
+                                transactionRequest.setSettled(false);
+                                Call<TransactionResponse> call = apiservice.createTransaction(u_id, transactionRequest);
+                                call.enqueue(new Callback<TransactionResponse>() {
+                                    @Override
+                                    public void onResponse(Call<TransactionResponse> call, Response<TransactionResponse> response) {
+                                        if (response.isSuccessful()) {
+                                        } else {
+                                            Log.d("signupactivity", "Code: " + response.code());
+                                            Log.d("signupActivity", "Message: " + response.message());
+                                            Log.d("error", "error msg: " + response.errorBody());
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<TransactionResponse> call, Throwable t) {
+                                        Log.d("transactionsactivity", "failure" + t.getMessage());
+                                    }
+                                });
+                                dialog.dismiss();
+                                if (details.contains(detail)) {
+                                    displaylist.set(details.indexOf(detail), "  " + detail + "        " + (amts.get(details.indexOf(detail)) + amt) + "     " + false);
+                                    amts.set(details.indexOf(detail),amts.get(details.indexOf(detail))+amt);
+                                }
+                                    else
+                                    displaylist.add("  " + detail + "        " + amt + "     " + false);
+                                arr.notifyDataSetChanged();
+                                transactionslist.invalidateViews();
+                            } else
+                                Toast.makeText(TransactionsActivity.this, "Enter the values", Toast.LENGTH_SHORT).show();
                         }
                     }
-
-                    @Override
-                    public void onFailure(Call<TransactionResponse> call, Throwable t) {
-                        Log.d("transactionsactivity", "failure" + t.getMessage());
-                    }
                 });
-                dialog.dismiss();
-                    displaylist.add("  "+detail+"        "+amt);
-                    arr.notifyDataSetChanged();
-                    transactionslist.invalidateViews();
-            }
-                else
-                    Toast.makeText(TransactionsActivity.this,"Enter the values",Toast.LENGTH_SHORT).show();
             }
         });
         dialog.show();
@@ -142,6 +233,8 @@ public class TransactionsActivity extends AppCompatActivity implements AdapterVi
         apiservice = retrofit.create(APIservice.class);
         details=new ArrayList<>();
         displaylist=new ArrayList<>();
+        settled_names=new ArrayList<>();
+        isSettled=new ArrayList<>();
         amts=new ArrayList<>();
         Call<List<TransactionResponse>> getTransactionsCall=apiservice.getalltransactions(u_id);
         getTransactionsCall.enqueue(new Callback<List<TransactionResponse>>() {
@@ -154,10 +247,25 @@ public class TransactionsActivity extends AppCompatActivity implements AdapterVi
                     {
                         details.add(transac.getTitle());
                         amts.add(transac.getDescription());
+                        isSettled.add(transac.isSettled());
+                    }
+                    for(int f=0;f<details.size();f++)
+                    {
+                        String t=details.get(f);
+                        int r=amts.get(f);
+                        for(int f1=f+1;f1<details.size();f1++)
+                        {
+                            if(t.equals(details.get(f1))) {
+                                r+=amts.get(f1);
+                                details.remove(f1);
+                                amts.remove(f1);
+                                f1--;
+                            }
+                        }
+                        amts.set(f,r);
                     }
                     for(int j=0;j<details.size();j++)
-                        displaylist.add(j,"  "+details.get(j)+"        "+amts.get(j));
-                    Log.d("value",displaylist.get(0));
+                        displaylist.add(j,"  "+details.get(j)+"        "+amts.get(j)+"     "+isSettled.get(j));
                     arr.notifyDataSetChanged();
                     transactionslist.invalidateViews();
                 }
@@ -180,9 +288,7 @@ public class TransactionsActivity extends AppCompatActivity implements AdapterVi
     }
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        // Handle item click here
         String selectedItem = displaylist.get(position);
-        // Perform any desired action with the selected item
-        Toast.makeText(this, "Clicked: " + selectedItem, Toast.LENGTH_SHORT).show();
+        settledialog(details.get(position),amts.get(position), position);
     }
 }

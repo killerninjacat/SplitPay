@@ -23,7 +23,21 @@ public class SignUpActivity extends AppCompatActivity {
     private static final String baseurl = "http://127.0.0.1:8000/";
     private APIservice apiservice;
     String name,password;
-
+    private SharedPreferences sharedPreferences;
+    private void redirectToHome() {
+        Intent intent = new Intent(SignUpActivity.this, HomeActivity.class);
+        intent.putExtra("userid", sharedPreferences.getInt("userId", 0));
+        intent.putExtra("uname", sharedPreferences.getString("name1",""));
+        startActivity(intent);
+        finish();
+    }
+    private void saveLoginState(int userId, String usname) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt("userId", userId);
+        editor.putString("name1",usname);
+        editor.putBoolean("isLoggedIn", true);
+        editor.commit();
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,6 +50,7 @@ public class SignUpActivity extends AppCompatActivity {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         apiservice = retrofit.create(APIservice.class);
+        sharedPreferences = getSharedPreferences("loginPrefs", MODE_PRIVATE);
         signupbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -52,10 +67,8 @@ public class SignUpActivity extends AppCompatActivity {
                             UserResponse userResponse = response.body();
                             Log.d("success","success"+userResponse.getEmail());
                             userId = response.body().getId();
-                            SharedPreferences sharedPrefs = getSharedPreferences("com.example.splitpay", MODE_PRIVATE);
-                            SharedPreferences.Editor editor = sharedPrefs.edit();
-                            editor.putInt("userId", userId);
-                            editor.apply();
+                            saveLoginState(userId,name);
+                            redirectToHome();
                         } else {
                             Log.d("Signupactivity", "Error: " + response.code());
                             Log.d("signupActivity", "Message: " + response.message());
@@ -71,6 +84,7 @@ public class SignUpActivity extends AppCompatActivity {
                 Intent i2=new Intent(SignUpActivity.this,HomeActivity.class);
                 i2.putExtra("uname",name);
                 i2.putExtra("userid",userId);
+                startActivity(i2);
             }
         });
     }

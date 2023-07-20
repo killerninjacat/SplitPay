@@ -108,6 +108,8 @@ public class MainActivity extends AppCompatActivity {
                                                     saveLoginState(id,name);
                                                     redirectToHome();
                                                 }
+                                                else
+                                                    Toast.makeText(MainActivity.this,"INCORRECT PASSWORD",Toast.LENGTH_SHORT).show();
                                             }
                                             else
                                             {
@@ -128,8 +130,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                             if(!exists)
                                 Toast.makeText(MainActivity.this, "USER DOES NOT EXIST. CREATE A NEW ACCOUNT.", Toast.LENGTH_SHORT).show();
-                            else if(!passwordcheck)
-                                Toast.makeText(MainActivity.this,"INCORRECT PASSWORD",Toast.LENGTH_SHORT).show();
+
                         }
                         else
                             Log.d("GetUsersError", "Error: " + response.code());
