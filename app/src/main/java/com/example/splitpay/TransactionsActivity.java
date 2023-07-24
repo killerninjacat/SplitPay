@@ -3,9 +3,6 @@ package com.example.splitpay;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Dialog;
-import android.content.Intent;
-import android.graphics.Color;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -114,7 +111,7 @@ public class TransactionsActivity extends AppCompatActivity implements AdapterVi
         dialog.setCancelable(true);
         dialog.setContentView(R.layout.newtransaction);
         dialog.getWindow().setLayout(1000, ViewGroup.LayoutParams.WRAP_CONTENT);
-        detailsbox = dialog.findViewById(R.id.detail);
+        detailsbox = dialog.findViewById(R.id.name1);
         amountbox = dialog.findViewById(R.id.amount);
         credit = dialog.findViewById(R.id.credit);
         debit = dialog.findViewById(R.id.debit);
@@ -154,11 +151,11 @@ public class TransactionsActivity extends AppCompatActivity implements AdapterVi
                                 });
                                 dialog.dismiss();
                                 if (details.contains(detail)) {
-                                    displaylist.set(details.indexOf(detail), "  " + detail + "        " + (amts.get(details.indexOf(detail)) + amt) + "     " + false);
+                                    displaylist.set(details.indexOf(detail),detail + "        " + (amts.get(details.indexOf(detail)) + amt) + "     " + false);
                                     amts.set(details.indexOf(detail),amts.get(details.indexOf(detail))+amt);
                                 }
                                 else
-                                    displaylist.add("  " + detail + "        " + amt + "     " + false);
+                                    displaylist.add(detail + "        " + amt + "     " + false);
                                 arr.notifyDataSetChanged();
                                 transactionslist.invalidateViews();
                             } else
@@ -203,11 +200,11 @@ public class TransactionsActivity extends AppCompatActivity implements AdapterVi
                                 });
                                 dialog.dismiss();
                                 if (details.contains(detail)) {
-                                    displaylist.set(details.indexOf(detail), "  " + detail + "        " + (amts.get(details.indexOf(detail)) + amt) + "     " + false);
+                                    displaylist.set(details.indexOf(detail),detail + "        " + (amts.get(details.indexOf(detail)) + amt) + "     " + false);
                                     amts.set(details.indexOf(detail),amts.get(details.indexOf(detail))+amt);
                                 }
                                     else
-                                    displaylist.add("  " + detail + "        " + amt + "     " + false);
+                                    displaylist.add(detail + "        " + amt + "     " + false);
                                 arr.notifyDataSetChanged();
                                 transactionslist.invalidateViews();
                             } else
@@ -265,7 +262,7 @@ public class TransactionsActivity extends AppCompatActivity implements AdapterVi
                         amts.set(f,r);
                     }
                     for(int j=0;j<details.size();j++)
-                        displaylist.add(j,"  "+details.get(j)+"        "+amts.get(j)+"     "+isSettled.get(j));
+                        displaylist.add(j,details.get(j)+"        "+amts.get(j)+"     "+isSettled.get(j));
                     arr.notifyDataSetChanged();
                     transactionslist.invalidateViews();
                 }
@@ -288,7 +285,6 @@ public class TransactionsActivity extends AppCompatActivity implements AdapterVi
     }
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        String selectedItem = displaylist.get(position);
         settledialog(details.get(position),amts.get(position), position);
     }
 }

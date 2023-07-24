@@ -42,6 +42,7 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent i1=new Intent(HomeActivity.this,SplitsActivity.class);
+                i1.putExtra("u_id",id);
                 startActivity(i1);
             }
         });

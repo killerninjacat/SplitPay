@@ -14,7 +14,7 @@
         android:layout_weight="1"
         android:background="@drawable/textfields1"
         android:fontFamily="@font/merriweather_sans"
-        android:textAlignment="textStart"
+        android:textAlignment="center"
         android:textColor="@color/black"
         android:textSize="25dp" />
 

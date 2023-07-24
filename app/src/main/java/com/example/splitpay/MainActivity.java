@@ -87,7 +87,6 @@ public class MainActivity extends AppCompatActivity {
                             List<UserResponse> users = response.body();
                             boolean exists=false;
                             Log.d("name","name: "+name);
-                            Log.d("user.getusername","username: "+users.get(1).getEmail());
                             for(UserResponse user:users)
                             {
                                 if(user.getEmail().equals(name))
