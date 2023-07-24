@@ -20,6 +20,7 @@ class Transaction(TransactionBase):
 
 class SplitBase(BaseModel):
     title: str
+    names: str
     description: int
 
 class SplitCreate(SplitBase):
