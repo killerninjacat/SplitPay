@@ -1,9 +1,0 @@
-fastapi
-uvicorn[standard]
-bcrypt
-jose
-pydantic
-SQLAlchemy
-pydantic_core
-python-jose
-python-multipart
