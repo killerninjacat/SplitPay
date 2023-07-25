@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -79,12 +80,9 @@ public class SignUpActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<UserResponse> call, Throwable t) {
                         Log.d("signupactivity","failure"+t.getMessage());
+                        Toast.makeText(SignUpActivity.this,"Server connection failed",Toast.LENGTH_SHORT).show();
                     }
                 });
-                Intent i2=new Intent(SignUpActivity.this,HomeActivity.class);
-                i2.putExtra("uname",name);
-                i2.putExtra("userid",userId);
-                startActivity(i2);
             }
         });
     }

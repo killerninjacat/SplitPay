@@ -29,6 +29,8 @@ def create_user(db: Session, user: schemas.UserCreate):
 def get_transactions(db: Session, user_id: int, skip: int = 0, limit: int = 100):
     return db.query(models.Transaction).filter_by(owner_id=user_id).offset(skip).limit(limit).all()
 
+def get_transaction(db: Session, user_id: int,transaction_id: int, skip: int = 0, limit: int = 100):
+    return db.query(models.Transaction).filter_by(owner_id=user_id, id=transaction_id).offset(skip).limit(limit).first()
 
 
 def create_user_transaction(db: Session, transaction: schemas.TransactionCreate, user_id: int):
@@ -38,6 +40,7 @@ def create_user_transaction(db: Session, transaction: schemas.TransactionCreate,
     db.refresh(db_transaction)
 
     return db_transaction
+
 
 def get_splits(db: Session, user_id: int, skip: int = 0, limit: int = 100):
     return db.query(models.Split).filter_by(owner_id=user_id).offset(skip).limit(limit).all()

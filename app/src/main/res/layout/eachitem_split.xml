@@ -10,13 +10,13 @@
         android:layout_width="500dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="3dp"
-        android:layout_marginBottom="15dp"
+        android:layout_marginBottom="10dp"
         android:layout_weight="1"
-        android:background="@drawable/textfields1"
+        android:background="@drawable/textfields2"
         android:fontFamily="@font/merriweather_sans"
         android:textAlignment="center"
         android:textColor="@color/black"
-        android:textSize="27dp" />
+        android:textSize="25dp" />
 
 
 </LinearLayout>

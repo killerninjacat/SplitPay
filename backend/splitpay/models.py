@@ -12,8 +12,8 @@ class User(Base):
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
 
-    transactions = relationship('Transaction', back_populates='owner')
     splits = relationship('Split', back_populates='owner')
+    transactions = relationship('Transaction', back_populates='owner')
 
 
 class Transaction(Base):

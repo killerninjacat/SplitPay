@@ -30,16 +30,16 @@ public class TransactionsActivity extends AppCompatActivity implements AdapterVi
     List<TransactionResponse> transaction;
     List <String> details,displaylist;
     List<Boolean> isSettled;
-    List<Integer> amts;
+    List<Integer> amts,ids;
     String detail;
     boolean exists,e;
     ArrayAdapter<String> arr;
     ListView transactionslist;
-    int amt,u_id;
-    List<String> settled_names;
+    int amt,u_id,transaction_id;
+    List<Integer> settled_names;
     private static final String baseurl = "http://127.0.0.1:8000/";
     private APIservice apiservice;
-    public void settledialog(String n,int a, int pos)
+    public void settledialog(String n,int a, int pos, int ids1)
     {
         Button settle;
         TextView n1,a1;
@@ -54,7 +54,7 @@ public class TransactionsActivity extends AppCompatActivity implements AdapterVi
         a1=dialog.findViewById(R.id.amt);
         a1.setText(a+"");
         n1.setText(n);
-        if(settled_names.contains(n)) {
+        if(settled_names.contains(ids1)) {
             settle.setText("Settled");
             settle.setBackgroundResource(R.drawable.settled);
             settled=true;
@@ -63,10 +63,22 @@ public class TransactionsActivity extends AppCompatActivity implements AdapterVi
             settle.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    settled_names.add(n);
+                    Call<Void> settletr=apiservice.settleTransaction(u_id,ids1,true);
+                    settletr.enqueue(new Callback<Void>() {
+                        @Override
+                        public void onResponse(Call<Void> call, Response<Void> response) {
+
+                        }
+
+                        @Override
+                        public void onFailure(Call<Void> call, Throwable t) {
+
+                        }
+                    });
+                    settled_names.add(ids1);
                     dialog.dismiss();
                     isSettled.set(pos,true);
-                    displaylist.set(pos,"  "+details.get(pos)+"        "+amts.get(pos)+"     "+isSettled.get(pos));
+                    displaylist.set(pos,"  "+details.get(pos)+"        "+amts.get(pos));
                     arr.notifyDataSetChanged();
                     transactionslist.invalidateViews();
                 }
@@ -150,12 +162,17 @@ public class TransactionsActivity extends AppCompatActivity implements AdapterVi
                                     }
                                 });
                                 dialog.dismiss();
-                                if (details.contains(detail)) {
-                                    displaylist.set(details.indexOf(detail),detail + "        " + (amts.get(details.indexOf(detail)) + amt) + "     " + false);
+                                /*if (details.contains(detail)) {
+                                    displaylist.set(details.indexOf(detail),detail + "        " + (amts.get(details.indexOf(detail)) + amt));
                                     amts.set(details.indexOf(detail),amts.get(details.indexOf(detail))+amt);
                                 }
-                                else
-                                    displaylist.add(detail + "        " + amt + "     " + false);
+                                else {*/
+                                    displaylist.add(detail + "        " + amt);
+                                    amts.add(amt);
+
+                                details.add(detail);
+                                ids.add(ids.get(ids.size()-1)+1);
+                                isSettled.add(false);
                                 arr.notifyDataSetChanged();
                                 transactionslist.invalidateViews();
                             } else
@@ -199,12 +216,17 @@ public class TransactionsActivity extends AppCompatActivity implements AdapterVi
                                     }
                                 });
                                 dialog.dismiss();
-                                if (details.contains(detail)) {
-                                    displaylist.set(details.indexOf(detail),detail + "        " + (amts.get(details.indexOf(detail)) + amt) + "     " + false);
+                                /*if (details.contains(detail)) {
+                                    displaylist.set(details.indexOf(detail),detail + "        " + (amts.get(details.indexOf(detail)) + amt));
                                     amts.set(details.indexOf(detail),amts.get(details.indexOf(detail))+amt);
                                 }
-                                    else
-                                    displaylist.add(detail + "        " + amt + "     " + false);
+                                else {*/
+                                    displaylist.add(detail + "        " + amt);
+                                    amts.add(amt);
+
+                                details.add(detail);
+                                ids.add(ids.get(ids.size()-1)+1);
+                                isSettled.add(false);
                                 arr.notifyDataSetChanged();
                                 transactionslist.invalidateViews();
                             } else
@@ -230,6 +252,7 @@ public class TransactionsActivity extends AppCompatActivity implements AdapterVi
         apiservice = retrofit.create(APIservice.class);
         details=new ArrayList<>();
         displaylist=new ArrayList<>();
+        ids=new ArrayList<>();
         settled_names=new ArrayList<>();
         isSettled=new ArrayList<>();
         amts=new ArrayList<>();
@@ -244,9 +267,14 @@ public class TransactionsActivity extends AppCompatActivity implements AdapterVi
                     {
                         details.add(transac.getTitle());
                         amts.add(transac.getDescription());
+                        ids.add(transac.getId());
                         isSettled.add(transac.isSettled());
+                        if(transac.isSettled()) {
+                            settled_names.add(transac.getId());
+                            Log.d("settled_names","settled_names"+transac.getTitle());
+                        }
                     }
-                    for(int f=0;f<details.size();f++)
+                    /*for(int f=0;f<details.size();f++)
                     {
                         String t=details.get(f);
                         int r=amts.get(f);
@@ -254,15 +282,18 @@ public class TransactionsActivity extends AppCompatActivity implements AdapterVi
                         {
                             if(t.equals(details.get(f1))) {
                                 r+=amts.get(f1);
+                                settled_names.remove(details.get(f1));
                                 details.remove(f1);
+                                ids.remove(f1);
+                                isSettled.remove(f1);
                                 amts.remove(f1);
                                 f1--;
                             }
                         }
                         amts.set(f,r);
-                    }
+                    }*/
                     for(int j=0;j<details.size();j++)
-                        displaylist.add(j,details.get(j)+"        "+amts.get(j)+"     "+isSettled.get(j));
+                        displaylist.add(j,details.get(j)+"        "+amts.get(j));
                     arr.notifyDataSetChanged();
                     transactionslist.invalidateViews();
                 }
@@ -285,6 +316,7 @@ public class TransactionsActivity extends AppCompatActivity implements AdapterVi
     }
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        settledialog(details.get(position),amts.get(position), position);
+        Log.d("sizes","sizes: "+details.size()+" "+amts.size());
+        settledialog(details.get(position),amts.get(position), position,ids.get(position));
     }
 }

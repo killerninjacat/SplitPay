@@ -59,6 +59,13 @@ def read_transactions(user_id: int, skip: int = 0, limit: int = 100, db: Session
 
     return transactions
 
+@app.put('/users/{user_id}/transactions/{transaction_id}/settle/')
+def update_settlement_for_transaction(user_id: int, transaction_id: int, settled: bool, db: Session = Depends(get_db)):
+    db_transaction = crud.get_transaction(db=db, user_id=user_id, transaction_id=transaction_id)
+    db_transaction.settled=settled
+    db.commit()
+
+
 @app.post('/users/{user_id}/new-split/', response_model=schemas.Split)
 def create_split_for_user(user_id: int, split: schemas.SplitCreate, db: Session = Depends(get_db)):
     return crud.create_user_split(db=db, split=split, user_id=user_id)

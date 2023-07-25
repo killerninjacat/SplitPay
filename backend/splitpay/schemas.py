@@ -52,7 +52,6 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     is_active: bool
-    transactions: List[Transaction] = []
 
     class Config:
         orm_mode = True

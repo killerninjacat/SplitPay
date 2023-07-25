@@ -98,7 +98,7 @@ public class SplitsActivity extends AppCompatActivity implements AdapterView.OnI
             }
         }
         Log.d("splitviewdialog", "temp contents: " + temp.toString());
-        ArrayAdapter<String> arr1 = new ArrayAdapter<String>(this, R.layout.eachitem, R.id.name, temp);
+        ArrayAdapter<String> arr1 = new ArrayAdapter<String>(this, R.layout.eachitem_split, R.id.name, temp);
         eachsplitlist.setAdapter(arr1);
         dialog.show();
     }
@@ -169,14 +169,15 @@ public class SplitsActivity extends AppCompatActivity implements AdapterView.OnI
                             Log.d("splitsactivity", "failure" + t.getMessage());
                         }
                     });
+                    dialog.dismiss();
+                    displaylist.add(title.getText().toString()+"        "+amt.getText());
+                    details.add(title.getText().toString());
+                    allnames.add(splitfinal);
+                    amts.add(Integer.parseInt(amt.getText().toString()));
+                    arr.notifyDataSetChanged();
+                    splitslist.invalidateViews();
                 }
-                dialog.dismiss();
-                displaylist.add(title.getText().toString()+"        "+amt.getText());
-                details.add(title.getText().toString());
-                allnames.add(splitfinal);
-                amts.add(Integer.parseInt(amt.getText().toString()));
-                arr.notifyDataSetChanged();
-                splitslist.invalidateViews();
+                else Toast.makeText(SplitsActivity.this,"Add the values",Toast.LENGTH_SHORT).show();
             }
         });
         dialog.show();
